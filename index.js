@@ -28,8 +28,7 @@ function initialPrompt() {
             "EXIT"
         ],
         name: "choice"
-    }).then(answers => {
-        console.log(answers.choice);
+    }).then(function(answers) {
         switch (answers.choice) {
             case "View All Employees":
                 viewEmployees()
@@ -78,16 +77,15 @@ function addDepartment() {
                 name: "new_department"
             }
         ])
-        .then(function (res) {
-            console.log(res);
-            const query = connection.query(
-                "INSERT INTO departments SET ?",
+        .then(function (err, res) {
+            if (err) throw err;
+            connection.query("INSERT INTO departments SET ?",
                 {
                     name: res.new_department
                 },
                 function (err, res) {
                     connection.query("SELECT * FROM departments", function (err, res) {
-                        console.table(res);
+                        if (err) throw err;
                         initialPrompt();
                     })
                 }
@@ -97,7 +95,7 @@ function addDepartment() {
 
 
 function addEmployee() {
-    console.log("Inserting a new employee.\n");
+    console.log("Inserting a new employee");
     inquirer
         .prompt([
             {
@@ -123,10 +121,7 @@ function addEmployee() {
             }
         ])
         .then(function (res) {
-            const query = connection.query(
-                "INSERT INTO employeeDB SET ?",
-                res,
-                function (err, res) {
+            connection.query("INSERT INTO employeeDB SET ?", res, function (err, res) {
                     if (err) throw err;
                     console.log("Employee added\n");
 
@@ -145,8 +140,64 @@ function viewEmployees() {
         });
 }
 function addRole() {
-    inquirer
-    .prompt([
-        
-    ])
+    let departments = [];
+    connection.query("SELECT * FROM departments",
+        function (err, res) {
+            if (err) throw err;
+            for (let i = 0; i < res.length; i++) {
+                res[i].first_name + res[i].last_name
+                departments.push({ name: res[i].name, value: res[i].id });
+            }
+            inquirer
+                .prompt([
+                    {
+                        type: "input",
+                        name: "title",
+                        message: "What role would you like to add?"
+                    }
+                ])
+                .then(function (res) {
+                  connection.query("INSERT INTO roles SET ?",{
+                            title: res.title,
+                        },
+                        function (err, res) {
+                            if (err) throw err;
+
+                            initialPrompt();
+                        }
+                    )
+                })
+        })
 }
+
+
+function updateEmployeeRole() {
+
+    connection.query("SELECT first_name, last_name, id FROM employees",
+        function (err, res) {
+            if (err) throw err;
+            let employees = res.map(employee => ({ name: employee.first_name + " " + employee.last_name, value: employee.id }))
+
+            inquirer
+                .prompt([
+                    {
+                        type: "list",
+                        name: "employeeName",
+                        message: "Which employee's role would you like to update?",
+                        choices: employees
+                    },
+                    {
+                        type: "input",
+                        name: "role",
+                        message: "What is your new role?"
+                    }
+                ])
+                .then(function (res) {
+                    connection.query(`UPDATE employees SET role_id = ${res.role} WHERE id = ${res.employeeName}`,
+                        function (err, res) {
+                            initialPrompt()
+                        }
+                    );
+                })
+        });
+    };
