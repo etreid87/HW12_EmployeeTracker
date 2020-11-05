@@ -61,3 +61,53 @@ function initialPrompt() {
         }
     })
 }
+function addEmployee() {
+    console.log("Inserting a new employee.\n");
+    inquirer 
+      .prompt ([ 
+        {
+          type: "input", 
+          message: "First Name?",
+          name: "first_name",
+        },
+        {
+          type: "input", 
+          message: "Last Name?",
+          name: "last_name"
+        },
+        {
+          type: "list",
+          message: "What is the employee's role?",
+          name: "role_id", 
+          choices: [1,2,3]
+        },
+        {
+          type: "input", 
+          message: "Who is their manager?",
+          name: "manager_id"
+        }
+      ])
+      .then (function(res){
+        const query = connection.query(
+          "INSERT INTO employeeDB SET ?", 
+         res,
+          function(err, res) {
+            if (err) throw err;
+            console.log( "Employee added!\n");
+    
+            start (); 
+          }
+        );    
+      })
+    }
+    function viewEmployees() {
+    
+      connection.query("SELECT employee.first_name, employee.last_name, roles.title AS \"role\", managers.first_name AS \"manager\" FROM employees LEFT JOIN roles ON employees.role_id = roles.id LEFT JOIN employees managers ON employees.manager_id = managers.id GROUP BY employees.id",  
+      function(err, res) {
+        if (err) throw err;
+        console.table(res);
+        start();
+      });
+    }
+    
+    
