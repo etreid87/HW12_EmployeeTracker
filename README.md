@@ -5,4 +5,4 @@ Homework 12 deals with the creation of an interface that interacts with stored i
 <img src="Assets/schema.png" width="500" />
 <img src="Assets/employee-tracker.gif" width="500" />
 
-<a src="https://github.com/etreid87/HW12_EmployeeTracker">Github</a>
+[Github](https://github.com/etreid87/HW12_EmployeeTracker)
